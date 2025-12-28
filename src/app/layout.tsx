@@ -3,11 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import {
   ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
+  
 } from '@clerk/nextjs'
 
 const geistSans = Geist({
@@ -31,16 +27,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+ 
+  <ClerkProvider
+    appearance={{
+      variables: {
+       colorPrimary: "#12242e",
+colorBackground: "#f3e3ea",
+colorText: "#12242e",
+colorTextSecondary: "#475569",
+colorInputBackground: "#ffffff",
 
-    
+
+      },
+    }}
+  >
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
+        {/* <Toaster /> */}
         {children}
       </body>
     </html>
-    </ClerkProvider>
+  </ClerkProvider>
+
+
   );
 }
