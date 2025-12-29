@@ -138,7 +138,7 @@ function Hero() {
 
               <Image
                 src={"/hero1.png"}
-                alt="DentWise AI"
+                alt="Dentiva AI"
                 width={600}
                 height={600}
                 className="w-full h-auto"
