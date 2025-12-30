@@ -4,7 +4,9 @@ import { CheckCircleIcon } from "lucide-react";
 
 function PricingSection() {
   return (
-    <section className="relative py-32 px-6 overflow-hidden bg-linear-to-b from-background via-muted/3 to-background">
+    <section className="relative py-32 px-6 overflow-hidden bg-linear-to-b from-background via-muted/3 to-background"
+    id="pricing-section"
+    >
       {/* Grid Background Pattern */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-linear-to-br from-background via-muted/5 to-primary/5">
