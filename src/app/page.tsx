@@ -12,12 +12,15 @@ import { redirect } from "next/navigation";
 export default async function Home() {
   const user = await currentUser();
 
-  // the best way of syncing => webhooks
-  await syncUser();
+  // Only sync user to DB if they are authenticated.
+  // syncUser() calls currentUser() internally — we pass the result
+  // through only when needed to avoid an extra Clerk API call for guests.
+  if (user) {
+    await syncUser();
+    redirect("/dashboard");
+  }
 
-  // redirect auth user to dashboard
-  if (user) redirect("/dashboard");
-
+  // Anonymous visitors see the landing page with no DB interaction
   return (
     <div className="min-h-screen bg-background">
       <Header />

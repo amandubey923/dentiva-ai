@@ -1,16 +1,22 @@
 import { useAvailableDoctors } from "@/hooks/use-doctors";
 import Image from "next/image";
+import type { Doctor } from "@prisma/client";
 
-function DoctorInfo({ doctorId }: { doctorId: string }) {
+interface DoctorInfoProps {
+  doctorId: string;
+  doctor?: Doctor | null;
+}
+
+function DoctorInfo({ doctorId, doctor: propDoctor }: DoctorInfoProps) {
   const { data: doctors = [] } = useAvailableDoctors();
-  const doctor = doctors.find((d) => d.id === doctorId);
+  const doctor = propDoctor ?? doctors.find((d) => d.id === doctorId);
 
   if (!doctor) return null;
 
   return (
     <div className="flex items-center gap-4">
       <Image
-        src={doctor.imageUrl!}
+        src={doctor.imageUrl}
         alt={doctor.name}
         width={48}
         height={48}

@@ -1,9 +1,23 @@
 "use server";
 
-import { Gender } from "@prisma/client";
+import { Gender, Prisma } from "@prisma/client";
+import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "../prisma";
 import { generateAvatar } from "../utils";
 import { revalidatePath } from "next/cache";
+
+async function verifyAdmin(): Promise<void> {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) throw new Error("Admin email is not configured");
+
+  const user = await currentUser();
+  if (!user) throw new Error("Unauthorized: authentication required");
+
+  const userEmail = user.emailAddresses[0]?.emailAddress;
+  if (userEmail !== adminEmail) {
+    throw new Error("Forbidden: admin access required");
+  }
+}
 
 export async function getDoctors() {
   try {
@@ -19,7 +33,7 @@ export async function getDoctors() {
       appointmentCount: doctor._count.appointments,
     }));
   } catch (error) {
-    console.log("Error fetching doctors:", error);
+    console.error("Error fetching doctors:", error);
     throw new Error("Failed to fetch doctors");
   }
 }
@@ -35,6 +49,8 @@ interface CreateDoctorInput {
 
 export async function createDoctor(input: CreateDoctorInput) {
   try {
+    await verifyAdmin();
+
     if (!input.name || !input.email) throw new Error("Name and email are required");
 
     const doctor = await prisma.doctor.create({
@@ -47,14 +63,17 @@ export async function createDoctor(input: CreateDoctorInput) {
     revalidatePath("/admin");
 
     return doctor;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating doctor:", error);
 
-    // handle unique constraint violation (email already exists)
-    if (error?.code === "P2002") {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
       throw new Error("A doctor with this email already exists");
     }
 
+    if (error instanceof Error) throw error;
     throw new Error("Failed to create doctor");
   }
 }
@@ -65,7 +84,8 @@ interface UpdateDoctorInput extends Partial<CreateDoctorInput> {
 
 export async function updateDoctor(input: UpdateDoctorInput) {
   try {
-    // validate
+    await verifyAdmin();
+
     if (!input.name || !input.email) throw new Error("Name and email are required");
 
     const currentDoctor = await prisma.doctor.findUnique({
@@ -75,7 +95,6 @@ export async function updateDoctor(input: UpdateDoctorInput) {
 
     if (!currentDoctor) throw new Error("Doctor not found");
 
-    // if email is changing, check if the new email already exists
     if (input.email !== currentDoctor.email) {
       const existingDoctor = await prisma.doctor.findUnique({
         where: { email: input.email },
@@ -88,7 +107,6 @@ export async function updateDoctor(input: UpdateDoctorInput) {
 
     const doctor = await prisma.doctor.update({
       where: { id: input.id },
-      // ...input is going to trigger the unique constraint violation for email
       data: {
         name: input.name,
         email: input.email,
@@ -99,9 +117,12 @@ export async function updateDoctor(input: UpdateDoctorInput) {
       },
     });
 
+    revalidatePath("/admin");
+
     return doctor;
   } catch (error) {
     console.error("Error updating doctor:", error);
+    if (error instanceof Error) throw error;
     throw new Error("Failed to update doctor");
   }
 }

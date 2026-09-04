@@ -14,15 +14,14 @@ function AdminDashboardClient() {
   const { data: doctors = [], isLoading: doctorsLoading } = useGetDoctors();
   const { data: appointments = [], isLoading: appointmentsLoading } = useGetAppointments();
 
-  // calculate stats from real data
+  const isLoading = doctorsLoading || appointmentsLoading;
+
   const stats = {
     totalDoctors: doctors.length,
-    activeDoctors: doctors.filter((doc: { isActive: any; }) => doc.isActive).length,
+    activeDoctors: doctors.filter((doc) => doc.isActive).length,
     totalAppointments: appointments.length,
-    completedAppointments: appointments.filter((app: { status: string; }) => app.status === "COMPLETED").length,
+    completedAppointments: appointments.filter((app) => app.status === "COMPLETED").length,
   };
-
-  if (doctorsLoading || appointmentsLoading) return <LoadingUI />;
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,35 +52,30 @@ function AdminDashboardClient() {
           </div>
         </div>
 
-        <AdminStats
-          totalDoctors={stats.totalDoctors}
-          activeDoctors={stats.activeDoctors}
-          totalAppointments={stats.totalAppointments}
-          completedAppointments={stats.completedAppointments}
-        />
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading dashboard data...</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <AdminStats
+              totalDoctors={stats.totalDoctors}
+              activeDoctors={stats.activeDoctors}
+              totalAppointments={stats.totalAppointments}
+              completedAppointments={stats.completedAppointments}
+            />
 
-        <DoctorsManagement />
+            <DoctorsManagement />
 
-        <RecentAppointments />
+            <RecentAppointments />
+          </>
+        )}
       </div>
     </div>
   );
 }
 
 export default AdminDashboardClient;
-
-function LoadingUI() {
-  return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-6 py-8 pt-24">
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">Loading dashboard...</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}

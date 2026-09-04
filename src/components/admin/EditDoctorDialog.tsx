@@ -1,7 +1,6 @@
 import { useUpdateDoctor } from "@/hooks/use-doctors";
-import { formatPhoneNumber } from "@/lib/utils";
-import { Doctor, Gender } from "@prisma/client";
-import { useState } from "react";
+import { Doctor } from "@prisma/client";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,10 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Button } from "../ui/button";
+import { DoctorFormFields, type DoctorFormData } from "./DoctorFormFields";
 
 interface EditDoctorDialogProps {
   isOpen: boolean;
@@ -22,26 +19,41 @@ interface EditDoctorDialogProps {
 }
 
 function EditDoctorDialog({ doctor, isOpen, onClose }: EditDoctorDialogProps) {
-  const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(doctor);
+  const [formData, setFormData] = useState<DoctorFormData>({
+    name: "",
+    email: "",
+    phone: "",
+    speciality: "",
+    gender: "MALE",
+    isActive: true,
+  });
+
+  useEffect(() => {
+    if (doctor) {
+      setFormData({
+        name: doctor.name,
+        email: doctor.email,
+        phone: doctor.phone,
+        speciality: doctor.speciality,
+        gender: doctor.gender,
+        isActive: doctor.isActive,
+      });
+    }
+  }, [doctor]);
 
   const updateDoctorMutation = useUpdateDoctor();
 
-  const handlePhoneChange = (value: string) => {
-    const formattedPhoneNumber = formatPhoneNumber(value);
-    if (editingDoctor) {
-      setEditingDoctor({ ...editingDoctor, phone: formattedPhoneNumber });
-    }
-  };
-
   const handleSave = () => {
-    if (editingDoctor) {
-      updateDoctorMutation.mutate({ ...editingDoctor }, { onSuccess: handleClose });
+    if (doctor) {
+      updateDoctorMutation.mutate(
+        { id: doctor.id, ...formData },
+        { onSuccess: handleClose }
+      );
     }
   };
 
   const handleClose = () => {
     onClose();
-    setEditingDoctor(null);
   };
 
   return (
@@ -52,87 +64,7 @@ function EditDoctorDialog({ doctor, isOpen, onClose }: EditDoctorDialogProps) {
           <DialogDescription>Update doctor information and status.</DialogDescription>
         </DialogHeader>
 
-        {editingDoctor && (
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={editingDoctor.name}
-                  onChange={(e) => setEditingDoctor({ ...editingDoctor, name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="speciality">Speciality</Label>
-                <Input
-                  id="speciality"
-                  value={editingDoctor.speciality}
-                  onChange={(e) =>
-                    setEditingDoctor({ ...editingDoctor, speciality: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={editingDoctor.email}
-                onChange={(e) => setEditingDoctor({ ...editingDoctor, email: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                value={editingDoctor.phone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
-                placeholder="(555) 123-4567"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
-                <Select
-                  value={editingDoctor.gender || ""}
-                  onValueChange={(value) =>
-                    setEditingDoctor({ ...editingDoctor, gender: value as Gender })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="MALE">Male</SelectItem>
-                    <SelectItem value="FEMALE">Female</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={editingDoctor.isActive ? "active" : "inactive"}
-                  onValueChange={(value) =>
-                    setEditingDoctor({ ...editingDoctor, isActive: value === "active" })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        )}
+        {doctor && <DoctorFormFields formData={formData} onChange={setFormData} />}
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>
@@ -141,7 +73,12 @@ function EditDoctorDialog({ doctor, isOpen, onClose }: EditDoctorDialogProps) {
           <Button
             onClick={handleSave}
             className="bg-primary hover:bg-primary/90"
-            disabled={updateDoctorMutation.isPending}
+            disabled={
+              !formData.name ||
+              !formData.email ||
+              !formData.speciality ||
+              updateDoctorMutation.isPending
+            }
           >
             {updateDoctorMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>

@@ -1,25 +1,26 @@
-import { getUserAppointments } from "@/lib/actions/appointments";
 import { format, isAfter, isSameDay, parseISO } from "date-fns";
 import NoNextAppointments from "./NoNextAppointments";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { CalendarIcon, ClockIcon, UserIcon } from "lucide-react";
+import type { TransformedAppointment } from "@/lib/actions/appointments";
 
-async function NextAppointment() {
-  const appointments = await getUserAppointments();
+interface NextAppointmentProps {
+  appointments: TransformedAppointment[];
+}
 
-  // filter for upcoming CONFIRMED appointments only (today or future)
-  const upcomingAppointments =
-    appointments?.filter((appointment) => {
-      const appointmentDate = parseISO(appointment.date);
-      const today = new Date();
-      const isUpcoming = isSameDay(appointmentDate, today) || isAfter(appointmentDate, today);
-      return isUpcoming && appointment.status === "CONFIRMED";
-    }) || [];
+function NextAppointment({ appointments }: NextAppointmentProps) {
+  // Filter for upcoming CONFIRMED appointments only (today or future)
+  const upcomingAppointments = appointments.filter((appointment) => {
+    const appointmentDate = parseISO(appointment.date);
+    const today = new Date();
+    const isUpcoming = isSameDay(appointmentDate, today) || isAfter(appointmentDate, today);
+    return isUpcoming && appointment.status === "CONFIRMED";
+  });
 
-  // get the next appointment (earliest upcoming one)
+  // Get the next appointment (earliest upcoming one)
   const nextAppointment = upcomingAppointments[0];
 
-  if (!nextAppointment) return <NoNextAppointments />; // no appointments, return nothing
+  if (!nextAppointment) return <NoNextAppointments />;
 
   const appointmentDate = parseISO(nextAppointment.date);
   const formattedDate = format(appointmentDate, "EEEE, MMMM d, yyyy");

@@ -47,6 +47,7 @@ model Doctor {
   // relationships
   appointments Appointment[]
 
+  @@index([isActive])
   @@map("doctors")
 
 }
@@ -69,6 +70,13 @@ model Appointment {
   // relationships
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  // indexes for query performance
+  @@index([userId])
+  @@index([doctorId])
+  @@index([date])
+  @@index([status])
+  @@index([doctorId, date, status])
 
   @@map("appointments")
 }

@@ -4,8 +4,11 @@ import { ChevronLeftIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import DoctorInfo from "./DoctorInfo";
 
+import type { Doctor } from "@prisma/client";
+
 interface BookingConfirmationStepProps {
   selectedDentistId: string;
+  selectedDoctor?: Doctor | null;
   selectedDate: string;
   selectedTime: string;
   selectedType: string;
@@ -17,6 +20,7 @@ interface BookingConfirmationStepProps {
 
 function BookingConfirmationStep({
   selectedDentistId,
+  selectedDoctor,
   selectedDate,
   selectedTime,
   selectedType,
@@ -46,6 +50,7 @@ function BookingConfirmationStep({
         <CardContent className="space-y-4">
           {/* doctor info */}
           <DoctorInfo doctorId={selectedDentistId} />
+          <DoctorInfo doctorId={selectedDentistId} doctor={selectedDoctor} />
 
           {/* appointment details */}
           <div className="grid grid-cols-2 gap-4 pt-4 border-t">

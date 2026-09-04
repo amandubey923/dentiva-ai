@@ -1,4 +1,5 @@
 import { useGetAppointments, useUpdateAppointmentStatus } from "@/hooks/use-appointment";
+import type { TransformedAppointment } from "@/lib/actions/appointments";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Calendar } from "lucide-react";
@@ -10,10 +11,8 @@ function RecentAppointments() {
   const updateAppointmentMutation = useUpdateAppointmentStatus();
 
   const handleToggleAppointmentStatus = (appointmentId: string) => {
-    const appointment = appointments.find((apt:any) => apt.id === appointmentId);
-
+    const appointment = appointments.find((apt: TransformedAppointment) => apt.id === appointmentId);
     const newStatus = appointment?.status === "CONFIRMED" ? "COMPLETED" : "CONFIRMED";
-
     updateAppointmentMutation.mutate({ id: appointmentId, status: newStatus });
   };
 
@@ -53,7 +52,7 @@ function RecentAppointments() {
             </TableHeader>
 
             <TableBody>
-              {appointments.map((appointment :any) => (
+              {appointments.map((appointment: TransformedAppointment) => (
                 <TableRow key={appointment.id}>
                   <TableCell>
                     <div>
@@ -63,28 +62,31 @@ function RecentAppointments() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium">{appointment.doctorName}</TableCell>
+
+                  <TableCell>
+                    <div className="font-medium">{appointment.doctorName}</div>
+                  </TableCell>
+
                   <TableCell>
                     <div>
-                      <div className="font-medium">
-                        {new Date(appointment.date).toLocaleDateString()}
-                      </div>
+                      <div>{appointment.date}</div>
                       <div className="text-sm text-muted-foreground">{appointment.time}</div>
                     </div>
                   </TableCell>
+
                   <TableCell>{appointment.reason}</TableCell>
-                  <TableCell>
+
+                  <TableCell>{getStatusBadge(appointment.status)}</TableCell>
+
+                  <TableCell className="text-right">
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={() => handleToggleAppointmentStatus(appointment.id)}
-                      className="h-6 px-2"
+                      disabled={updateAppointmentMutation.isPending}
                     >
-                      {getStatusBadge(appointment.status)}
+                      {appointment.status === "CONFIRMED" ? "Complete" : "Reopen"}
                     </Button>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="text-xs text-muted-foreground">Click status to toggle</div>
                   </TableCell>
                 </TableRow>
               ))}

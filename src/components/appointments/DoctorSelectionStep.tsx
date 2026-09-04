@@ -1,14 +1,15 @@
 import { useAvailableDoctors } from "@/hooks/use-doctors";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import Image from "next/image";
-import { MapPinIcon, PhoneIcon, StarIcon } from "lucide-react";
+import { MapPinIcon, PhoneIcon, CheckCircle2Icon } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { DoctorCardsLoading } from "./DoctorCardsLoading";
+import type { Doctor } from "@prisma/client";
 
 interface DoctorSelectionStepProps {
   selectedDentistId: string | null;
-  onSelectDentist: (dentistId: string) => void;
+  onSelectDentist: (dentistId: string, doctor?: Doctor) => void;
   onContinue: () => void;
 }
 
@@ -38,12 +39,12 @@ function DoctorSelectionStep({
             className={`cursor-pointer transition-all hover:shadow-lg ${
               selectedDentistId === dentist.id ? "ring-2 ring-primary" : ""
             }`}
-            onClick={() => onSelectDentist(dentist.id)}
+            onClick={() => onSelectDentist(dentist.id, dentist)}
           >
             <CardHeader className="pb-4">
               <div className="flex items-start gap-4">
                 <Image
-                  src={dentist.imageUrl!}
+                  src={dentist.imageUrl}
                   alt={dentist.name}
                   width={64}
                   height={64}
@@ -55,12 +56,12 @@ function DoctorSelectionStep({
                     {dentist.speciality || "General Dentistry"}
                   </CardDescription>
                   <div className="flex items-center gap-2 mt-2">
-                    <div className="flex items-center gap-1">
-                      <StarIcon className="w-4 h-4 fill-amber-400 text-amber-400" />
-                      <span className="text-sm font-medium">5</span>
+                    <div className="flex items-center gap-1 text-primary">
+                      <CheckCircle2Icon className="w-3.5 h-3.5" />
+                      <span className="text-xs font-medium">Verified</span>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      ({dentist.appointmentCount} appointments)
+                    <span className="text-xs text-muted-foreground">
+                      • {dentist.appointmentCount} appointments
                     </span>
                   </div>
                 </div>
@@ -70,7 +71,7 @@ function DoctorSelectionStep({
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPinIcon className="w-4 h-4" />
-                <span>DentWise</span>
+                <span>Dentiva Clinic</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <PhoneIcon className="w-4 h-4" />
@@ -93,4 +94,5 @@ function DoctorSelectionStep({
     </div>
   );
 }
+
 export default DoctorSelectionStep;

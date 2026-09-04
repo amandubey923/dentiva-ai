@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useBookedTimeSlots } from "@/hooks/use-appointment";
 import { APPOINTMENT_TYPES, getAvailableTimeSlots, getNext5Days } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -29,8 +30,8 @@ function TimeSelectionStep({
 }: TimeSelectionStepProps) {
   const { data: bookedTimeSlots = [] } = useBookedTimeSlots(selectedDentistId, selectedDate);
 
-  const availableDates = getNext5Days();
-  const availableTimeSlots = getAvailableTimeSlots();
+  const availableDates = useMemo(() => getNext5Days(), []);
+  const availableTimeSlots = useMemo(() => getAvailableTimeSlots(), []);
 
   const handleDateSelect = (date: string) => {
     onDateChange(date);

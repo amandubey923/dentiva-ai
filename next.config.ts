@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-    images: {
+  images: {
     remotePatterns: [
       {
         protocol: "https",
@@ -17,10 +16,10 @@ const nextConfig: NextConfig = {
         hostname: "img.clerk.com",
       },
     ],
-    unoptimized: true,
+    formats: ["image/avif", "image/webp"],
+    unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED === "true",
   },
   reactCompiler: true,
-
 };
 
 export default nextConfig;

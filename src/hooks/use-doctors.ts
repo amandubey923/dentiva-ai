@@ -7,6 +7,7 @@ export function useGetDoctors() {
   const result = useQuery({
     queryKey: ["getDoctors"],
     queryFn: getDoctors,
+    staleTime: 3 * 60 * 1000, // 3 minutes
   });
 
   return result;
@@ -20,8 +21,9 @@ export function useCreateDoctor() {
     onSuccess: () => {
       // invalidate related queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ["getDoctors"] });
+      queryClient.invalidateQueries({ queryKey: ["getAvailableDoctors"] });
     },
-    onError: (error) => console.log("Error while  creating a doctor"),
+    onError: (error) => console.error("Error while creating a doctor:", error),
   });
 
   return result;
@@ -45,6 +47,7 @@ export function useAvailableDoctors() {
   const result = useQuery({
     queryKey: ["getAvailableDoctors"],
     queryFn: getAvailableDoctors,
+    staleTime: 5 * 60 * 1000, // 5 minutes - doctors list is stable during booking
   });
 
   return result;
